@@ -1,14 +1,17 @@
-# Relatório Técnico de Auditoria: Reconhecimento de Infraestrutura
+# Relatório Técnico de Auditoria de Infraestrutura - Fase 1
 
-Este projeto documenta a análise de superfície de ataque realizada no servidor **PF-DC01**, o Controlador de Domínio do ambiente **PixelForge**.
+### Introdução e Âmbito
+Este documento descreve a fase inicial de reconhecimento e mapeamento de superfície de ataque realizada no servidor **PF-DC01**, configurado como Controlador de Domínio para a organização **PixelForge**. O objetivo desta etapa consistiu na identificação de serviços expostos e na validação das configurações de segurança perimetral do host num ambiente de rede interna controlado.
 
-### Metodologia
-A auditoria utilizou uma abordagem *Black Box* para identificar serviços expostos e validar configurações de segurança perimetral. Foram utilizadas as ferramentas **Nmap** (mapeamento de portas e diagnóstico NSE) e **Enum4linux** (análise de protocolos SMB/RPC).
+### Metodologia de Reconhecimento
+A auditoria foi conduzida através de uma abordagem *Black Box*, utilizando ferramentas de varredura de rede e enumeração de protocolos. Foram empregues o **Nmap** para a descoberta de serviços e execução de scripts de diagnóstico (NSE), e o **Enum4linux** para a análise profunda dos protocolos SMB e RPC.
 
-### Análise de Resultados
-A varredura identificou os serviços críticos Kerberos (88), LDAP/S (389/636) e SMB (445), confirmando a função do host como Active Directory Domain Controller (`pixelforge.internal`). 
+### Análise de Resultados e Vetores Identificados
+A varredura revelou uma superfície de ataque típica de um ambiente Active Directory, com serviços críticos ativos em portas padrão, nomeadamente Kerberos (88), LDAP/S (389/636) e SMB (445). A identificação do domínio `pixelforge.internal` foi confirmada através da resposta dos serviços de diretório.
 
-Os testes de enumeração via *Null Sessions* resultaram em `ACCESS_DENIED`, validando que as políticas de *hardening* contra a extração anónima de dados da base SAM estão devidamente aplicadas. No entanto, a exposição das portas 3389 (RDP) e 5985 (WinRM) foi registada como um vetor que exige monitorização de tentativas de autenticação e restrição de acesso por IP.
+Durante a análise do protocolo SMB, foram realizados testes de sessão nula (*Null Sessions*) para verificar a possibilidade de extração de contas de utilizadores sem autenticação. O servidor respondeu corretamente com `NT_STATUS_ACCESS_DENIED`, o que demonstra a eficácia das políticas de *hardening* aplicadas para impedir a enumeração anónima da base de dados SAM.
 
-### Conclusão e Próximos Passos
-A postura de segurança inicial do servidor é robusta, com mitigações eficazes contra a enumeração básica de rede. O reconhecimento externo está concluído, fornecendo a base necessária para a **Fase 2**, que consistirá numa auditoria de vulnerabilidades credenciada (análise de patches e registos internos) com o **Nessus Essentials**.
+Relativamente à gestão remota, as portas 3389 (RDP) e 5985 (WinRM) encontram-se abertas. Embora necessárias para a administração do sistema, a sua exposição direta na rede interna representa um vetor que exige monitorização de tentativas de autenticação e, preferencialmente, a implementação de restrições por endereços IP autorizados.
+
+### Conclusão e Próximas Etapas
+O servidor apresenta uma postura de segurança inicial robusta, com as vulnerabilidades óbvias de enumeração devidamente mitigadas. O reconhecimento externo está concluído, fornecendo os dados necessários para a **Fase 2**, que compreenderá uma gestão de vulnerabilidades credenciada. O foco passará agora para a análise interna de *patches* e configurações de registo através do **Nessus Essentials**.
